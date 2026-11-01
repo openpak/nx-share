@@ -1,0 +1,27 @@
+# Quadlet for nx-share. Copy to ~/.config/containers/systemd/openpak-nx-share.container on the
+# box, then run ~/openpak/deploy/pin-ips.sh --apply. Keys go INSIDE [Container].
+[Unit]
+Description=OpenPak nx-share (Switch Album Post -> OpenVerse)
+# Ordering only: no Requires=, so a restart of either never takes this one down.
+After=openpak-nx-baas.service openpak-nn-juxtaposition-api.service
+
+[Container]
+ContainerName=openpak-nx-share
+Image=ghcr.io/openpak/nx-share:latest
+AutoUpdate=registry
+Network=openpak.network
+# The shared env file carries NX_INTERNAL_KEY and the OpenVerse gRPC API key.
+EnvironmentFile=%h/openpak/deploy/.env
+Environment=NX_ADDR=:21000 NX_CA_DIR=/ca NX_CORE_URL=http://openpak-nx-baas:20070
+Environment=NX_VERSE_GRPC=openpak-nn-juxtaposition-api:20091 NX_VERSE_URL=https://verse.openpak.org
+Environment=NX_TITLES_URL=http://openpak-website:20010/api/v1/titles
+Volume=%h/openpak/deploy/ca:/ca:ro
+ReadOnly=true
+NoNewPrivileges=true
+DropCapability=all
+
+[Service]
+Restart=always
+
+[Install]
+WantedBy=default.target

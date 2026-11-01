@@ -1,0 +1,16 @@
+# Traefik dynamic.yml snippet for nx-share: merge the router and the service into
+# ~/openpak/deploy/traefik/dynamic.yml (tcp: section). TLS stays passthrough.
+tcp:
+  routers:
+    nx-share:
+      entryPoints: [console]
+      rule: HostSNI(`web-lp1.share.srv.nintendo.net`)
+      priority: 1000
+      service: nx-share
+      tls:
+        passthrough: true
+  services:
+    nx-share:
+      loadBalancer:
+        servers:
+          - address: "openpak-nx-share:21000"

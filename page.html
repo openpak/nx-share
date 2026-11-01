@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Post to OpenVerse</title>
+<style>
+/* The OpenPak console look (website input.css tokens, as nx-baas's Switch Online page uses them):
+   grey shell, white tiles, slate ink, indigo primary, the cyan selection ring on focus. The
+   console's browser is an old WebKit: no web fonts, no flex gap, no :has(), no color-mix. */
+:root{--paper:#e9ecf0;--raised:#ffffff;--sunk:#dde1e7;--ink:#20262f;--ink-2:#48505c;--muted:#6b7380;
+--line:#d9dde3;--line-2:#c3c9d1;--cursor:#0094be;--cursor-2:#39c9ea;--accent:#4f46e5;--accent-weak:#eceeff;--on-accent:#fff;
+--ok:#138a45;--ok-weak:#e3f5ea;--ok-line:#b2e0c3;--bad:#c42b2b;--bad-weak:#fde9e9;--bad-line:#f2bfbf;
+--shadow-sm:0 1px 0 rgba(32,38,47,.06);--shadow:0 1px 0 rgba(32,38,47,.06),0 6px 16px -10px rgba(32,38,47,.25)}
+@media (prefers-color-scheme:dark){:root{--paper:#24272d;--raised:#31353d;--sunk:#1d2025;--ink:#eef1f5;--ink-2:#c4c9d1;--muted:#949ba6;
+--line:#3b4048;--line-2:#4a505a;--cursor:#3ad7f2;--cursor-2:#a2efff;--accent:#9198ff;--accent-weak:#2e3156;--on-accent:#15172e;
+--ok:#4fd486;--ok-weak:#1f3a2b;--ok-line:#2f5c42;--bad:#ff7676;--bad-weak:#432528;--bad-line:#6e3439;
+--shadow-sm:0 1px 0 rgba(0,0,0,.25);--shadow:0 1px 0 rgba(0,0,0,.25),0 8px 18px -10px rgba(0,0,0,.6)}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);-webkit-font-smoothing:antialiased;
+font:2.9vh/1.45 "Inter",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button,textarea{font:inherit;color:inherit}
+.top{display:flex;align-items:center;justify-content:space-between;padding:3.4vh 5vw 0}
+.top h1{margin:0;font-size:4.4vh;font-weight:750;letter-spacing:-.03em}
+.top h1 b{color:var(--accent)}
+.who{display:inline-block;padding:.5vh 1.4vw;border-radius:999px;font-size:2.2vh;font-weight:650;background:var(--raised);border:1px solid var(--line);color:var(--ink-2)}
+.main{display:flex;padding:3vh 5vw 0}
+.shot{width:52vw;margin-right:3vw}
+.frame{position:relative;width:100%;padding-top:56.25%;border-radius:16px;overflow:hidden;background:var(--sunk);box-shadow:var(--shadow)}
+.frame img{position:absolute;left:0;top:0;width:100%;height:100%}
+.game{margin:1.6vh 0 0;font-size:2.7vh;font-weight:650}
+.note{margin:.6vh 0 0;font-size:2.1vh;color:var(--muted)}
+.side{-webkit-box-flex:1;flex:1;display:flex;flex-direction:column}
+textarea{width:100%;height:30vh;padding:1.6vh 1.2vw;border-radius:14px;border:1px solid var(--line-2);background:var(--raised);resize:none;font-size:2.8vh;box-shadow:var(--shadow-sm)}
+.count{margin:.8vh 0 0;text-align:right;font-size:2.1vh;color:var(--muted)}
+.count.over{color:var(--bad)}
+.check{display:flex;align-items:center;margin:1.4vh 0 0;padding:1.2vh 1vw;border-radius:12px;border:1px solid var(--line);background:var(--raised);font-size:2.5vh;text-align:left}
+.check i{display:inline-block;width:3.4vh;height:3.4vh;margin-right:1vw;border-radius:8px;border:2px solid var(--line-2);background:var(--raised)}
+.check.on i{background:var(--accent);border-color:var(--accent)}
+.rules{margin:1.6vh 0 0;font-size:2.1vh;color:var(--ink-2)}
+.primary{margin-top:auto;min-height:9vh;border-radius:999px;border:1px solid var(--accent);background:var(--accent);color:var(--on-accent);font-weight:650;font-size:3vh}
+.primary[disabled]{opacity:.45}
+.panel{margin:12vh auto 0;width:70vw;padding:4vh 3vw;border-radius:20px;background:var(--raised);border:1px solid var(--line);box-shadow:var(--shadow);text-align:center}
+.panel h2{margin:0 0 1.4vh;font-size:4vh;letter-spacing:-.02em}
+.panel p{margin:0 0 3vh;font-size:2.7vh;color:var(--ink-2)}
+.panel .url{font-weight:650;color:var(--accent)}
+.panel .primary{display:inline-block;min-width:30vw;padding:0 3vw}
+.panel.ok h2{color:var(--ok)}
+.panel.bad h2{color:var(--bad)}
+.spin{width:7vh;height:7vh;margin:0 auto 2vh;border-radius:50%;border:.8vh solid var(--line);border-top-color:var(--accent);-webkit-animation:spin 1s linear infinite;animation:spin 1s linear infinite}
+@-webkit-keyframes spin{to{-webkit-transform:rotate(360deg)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+textarea:focus,.check:focus,.primary:focus,.check:hover,.primary:hover{outline:none;box-shadow:0 0 0 3px var(--paper),0 0 0 7px var(--cursor)}
+</style>
+</head>
+<body>
+<div class="top"><h1>Post to <b>OpenVerse</b></h1><span class="who" id="who" hidden></span></div>
+
+<div id="wait" class="panel"><div class="spin"></div><p id="waitText">Checking your account…</p></div>
+
+<div id="compose" class="main" hidden>
+ <div class="shot">
+  <div class="frame"><img id="preview" alt=""></div>
+  <p class="game" id="game"></p>
+  <p class="note" id="multi" hidden>OpenVerse posts carry one screenshot. The first one you picked is posted.</p>
+ </div>
+ <div class="side">
+  <textarea id="message" maxlength="280" placeholder="Say something about it (optional)"></textarea>
+  <p class="count" id="count">280</p>
+  <button type="button" class="check" id="spoiler"><i></i>Contains spoilers</button>
+  <p class="rules">Your post goes to verse.openpak.org under your OpenPak account and follows the OpenVerse community rules. Anyone can report it.</p>
+  <button type="button" class="primary" id="post" disabled>Post</button>
+ </div>
+</div>
+
+<div id="done" class="panel ok" hidden><h2>Posted</h2><p>See it at <span class="url" id="link"></span></p><button type="button" class="primary" id="doneBtn">OK</button></div>
+<div id="fail" class="panel bad" hidden><h2 id="failTitle">Can't post</h2><p id="failText"></p><button type="button" class="primary" id="failBtn">OK</button></div>
+
+<input type="file" id="files" multiple hidden>
+
+<script>
+(function(){
+var MAX=280, TOKEN='', IMAGE='', SPOILER=false, FILES=0, POSTING=false;
+function $(id){return document.getElementById(id);}
+function param(k){var m=location.search.match(new RegExp('[?&]'+k+'=([^&]*)'));return m?decodeURIComponent(m[1]):'';}
+var APP_ID=param('app_id'), FILE_TYPE=param('file_type');
+var MESSAGES={
+ banned:["Can't post","This account can't post to OpenVerse."],
+ supervised:["Posting is off","Parental controls don't allow posting from this account."],
+ not_linked:["No OpenPak account","Link this user to an OpenPak account first, then try again."],
+ unknown_console:["Can't check your account","Check the connection and try again."],
+ no_token:["Can't check your account","Check the connection and try again."],
+ rules:["Post not sent","The OpenVerse community rules stopped this post. Change the text and try again."],
+ too_many_posts:["Slow down","You've posted a lot in the last hour. Try again later."],
+ bad_image:["Can't post this","This capture can't be posted to OpenVerse."],
+ not_allowed:["Can't post here","This community isn't taking posts from you right now."],
+ video:["Videos aren't supported","OpenVerse takes screenshots. Pick a screenshot to post."],
+ verse_unavailable:["OpenVerse is unavailable","Try again later."],
+ offline:["Not available here","Open this page from the Album on your console."]
+};
+function show(id){var p=['wait','compose','done','fail'];for(var i=0;i<p.length;i++){$(p[i]).hidden=(p[i]!==id);}}
+function diag(o){try{var x=new XMLHttpRequest();x.open('POST','/_openpak/diag');x.setRequestHeader('Content-Type','application/json');x.send(JSON.stringify(o));}catch(e){}}
+function leave(result,id){
+ // The share applet's callback URL; the applet ends and hands result/service/id to the Album.
+ location.href='https://localhost/share/result='+result+(result==='success'?'&service=openverse&id='+encodeURIComponent(id):'');
+}
+var retry=false;
+function fail(code){
+ var m=MESSAGES[code]||["Can't post","Something went wrong. Try again later."];
+ $('failTitle').textContent=m[0];$('failText').textContent=m[1];
+ retry=(code==='rules'||code==='verse_unavailable'||code==='too_many_posts')&&IMAGE!=='';
+ $('failBtn').textContent=retry?'Back to the post':'OK';
+ show('fail');$('failBtn').focus();
+}
+function api(path,body,cb){
+ var x=new XMLHttpRequest();
+ x.open('POST',path);x.setRequestHeader('Content-Type','application/json');
+ x.onreadystatechange=function(){
+  if(x.readyState!==4){return;}
+  var r={};try{r=JSON.parse(x.responseText);}catch(e){}
+  cb(x.status,r);
+ };
+ x.send(JSON.stringify(body));
+}
+function count(){
+ var left=MAX-$('message').value.length;
+ $('count').textContent=left;$('count').className='count'+(left<0?' over':'');
+ $('post').disabled=(left<0||IMAGE===''||POSTING);
+}
+function ready(){
+ if(TOKEN===''||IMAGE===''){return;}
+ show('compose');count();$('message').focus();
+}
+function read(file){
+ var r=new FileReader();
+ r.onload=function(){IMAGE=String(r.result);$('preview').src=IMAGE;ready();};
+ r.onerror=function(){fail('bad_image');};
+ r.readAsDataURL(file);
+}
+$('files').addEventListener('change',function(e){
+ var f=e.target.files||[];FILES=f.length;
+ var d={event:'files',count:f.length,file_type:FILE_TYPE,files:[]};
+ for(var i=0;i<f.length;i++){d.files.push({name:f[i].name,type:f[i].type,size:f[i].size});}
+ diag(d);
+ if(f.length===0){fail('bad_image');return;}
+ if(FILE_TYPE==='video'||/^video\//.test(f[0].type||'')){fail('video');return;}
+ $('multi').hidden=f.length<2;
+ read(f[0]);
+});
+$('message').addEventListener('input',count);
+$('spoiler').addEventListener('click',function(){SPOILER=!SPOILER;this.className='check'+(SPOILER?' on':'');});
+$('post').addEventListener('click',function(){
+ if(this.disabled){return;}
+ POSTING=true;count();
+ $('waitText').textContent='Posting…';show('wait');
+ api('/_openpak/post',{id_token:TOKEN,app_id:APP_ID,message:$('message').value,image:IMAGE,spoiler:SPOILER},function(st,r){
+  POSTING=false;
+  if(st===200&&r.post_id){
+   $('link').textContent=String(r.url||'').replace(/^https?:\/\//,'');
+   $('doneBtn').setAttribute('data-id',r.post_id);
+   try{window.nx.playSystemSe('SePostSuccess');}catch(e){}
+   show('done');$('doneBtn').focus();return;
+  }
+  fail(r.error||(st===0?'verse_unavailable':''));
+ });
+});
+$('doneBtn').addEventListener('click',function(){leave('success',this.getAttribute('data-id'));});
+$('failBtn').addEventListener('click',function(){if(retry){show('compose');count();$('post').focus();}else{leave('cancel');}});
+
+var nx=window.nx;
+diag({event:'load',nx:!!nx,system:nx&&nx.system?Object.keys(nx.system):[],footer:!!(nx&&nx.footer),app_id:APP_ID,file_type:FILE_TYPE,file_count:param('file_count'),path:location.pathname});
+if(!nx||!nx.system){fail('offline');return;}
+if(FILE_TYPE==='video'){fail('video');return;}
+if(location.pathname.indexOf('/settings')===0){
+ // System Settings' posting settings: there is nothing to link or unlink on OpenPak.
+ $('failTitle').textContent='OpenVerse';$('failText').textContent='Posts go to your OpenPak account. There is nothing to set up.';show('fail');return;
+}
+try{nx.footer.setAssign('B','Back',function(){if(!POSTING){leave('cancel');}},{se:'SeFooterDecideBack'});}catch(e){}
+try{nx.footer.unsetAssign('X');}catch(e){}
+try{nx.system.setUploadFile($('files'));}catch(e){diag({event:'setUploadFile',error:String(e)});fail('bad_image');return;}
+nx.system.setNsaIdTokenAvailableCallback(function(err,token){
+ if(err){diag({event:'token',error:String(err)});try{nx.system.showError(err);}catch(e){}fail('unknown_console');return;}
+ api('/_openpak/whoami',{id_token:token,app_id:APP_ID},function(st,r){
+  if(st!==200){fail(r.error||'unknown_console');return;}
+  TOKEN=token;
+  if(r.nickname){$('who').textContent=r.nickname;$('who').hidden=false;}
+  $('game').textContent=r.game||'Nintendo Switch';
+  if(r.max){MAX=r.max;$('message').setAttribute('maxlength',MAX);}
+  $('waitText').textContent='Loading your screenshot…';
+  ready();
+ });
+});
+})();
+</script>
+</body>
+</html>
