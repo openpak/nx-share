@@ -39,7 +39,7 @@ textarea{width:100%;height:30vh;padding:1.6vh 1.2vw;border-radius:14px;border:1p
 .check i{display:inline-block;width:3.4vh;height:3.4vh;margin-right:1vw;border-radius:8px;border:2px solid var(--line-2);background:var(--raised)}
 .check.on i{background:var(--accent);border-color:var(--accent)}
 .rules{margin:1.6vh 0 0;font-size:2.1vh;color:var(--ink-2)}
-.primary{margin-top:auto;min-height:9vh;border-radius:999px;border:1px solid var(--accent);background:var(--accent);color:var(--on-accent);font-weight:650;font-size:3vh}
+.primary{margin-top:2.6vh;min-height:9vh;border-radius:999px;border:1px solid var(--accent);background:var(--accent);color:var(--on-accent);font-weight:650;font-size:3vh}
 .primary[disabled]{opacity:.45}
 .panel{margin:12vh auto 0;width:70vw;padding:4vh 3vw;border-radius:20px;background:var(--raised);border:1px solid var(--line);box-shadow:var(--shadow);text-align:center}
 .panel h2{margin:0 0 1.4vh;font-size:4vh;letter-spacing:-.02em}
@@ -177,9 +177,11 @@ if(location.pathname.indexOf('/settings')===0){
  $('failTitle').textContent='OpenVerse';$('failText').textContent='Posts go to your OpenPak account. There is nothing to set up.';show('fail');return;
 }
 try{nx.footer.setAssign('B','Back',function(){if(!POSTING){leave('cancel');}},{se:'SeFooterDecideBack'});}catch(e){}
-try{nx.footer.unsetAssign('X');}catch(e){}
 try{nx.system.setUploadFile($('files'));}catch(e){diag({event:'setUploadFile',error:String(e)});fail('bad_image');return;}
+// No token within 30 s: say so instead of spinning forever.
+var waited=setTimeout(function(){if(TOKEN===''){diag({event:'token',error:'timeout'});fail('unknown_console');}},30000);
 nx.system.setNsaIdTokenAvailableCallback(function(err,token){
+ clearTimeout(waited);
  if(err){diag({event:'token',error:String(err)});try{nx.system.showError(err);}catch(e){}fail('unknown_console');return;}
  api('/_openpak/whoami',{id_token:token,app_id:APP_ID},function(st,r){
   if(st!==200){fail(r.error||'unknown_console');return;}

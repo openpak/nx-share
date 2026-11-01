@@ -107,12 +107,14 @@ func (s *server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		s.whoami(w, r)
 	case r.URL.Path == "/_openpak/post" && r.Method == http.MethodPost:
 		s.post(w, r)
+	case r.URL.Path == "/favicon.ico":
+		http.NotFound(w, r)
 	case r.URL.Path == "/_openpak/diag" && r.Method == http.MethodPost:
 		// What the page saw (the nx API it found, the files it was handed): logged, nothing kept.
 		b, _ := io.ReadAll(io.LimitReader(r.Body, 4096))
 		log.Printf("%s page diag: %s", logPrefix, sanitizeLog(string(b)))
 		w.WriteHeader(http.StatusNoContent)
-	case r.Method == http.MethodGet && !strings.HasPrefix(r.URL.Path, "/_openpak/") && r.URL.Path != "/favicon.ico":
+	case r.Method == http.MethodGet && !strings.HasPrefix(r.URL.Path, "/_openpak/"):
 		// The share applet's start page (/) and its settings page (/settings/). Every query
 		// parameter name is logged (values only for the three known ones), so a console run
 		// records exactly what the applet sends.
