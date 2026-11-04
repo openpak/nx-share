@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.1.2 — 2026-11-04
+
+- maintenance
+
 ## 0.1.1
 
 - Page: a 30-second timeout when the console never hands over its NSA id token, X keeps the
